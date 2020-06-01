@@ -32,7 +32,7 @@ public class NewOrderMain {
     var record = new ProducerRecord<String, String>("BOOK_ORDERS", order);
     Future<RecordMetadata> future = producer.send(record, (RecordMetadata metadata, Exception exception) -> {
       if (exception != null) {
-        logger.error("ERROR when send record to BOOK_ORDERS topic", exception);
+        logger.error("ERROR when sending record to BOOK_ORDERS topic", exception);
         return;
       }
       logger.info("SUCCESS! Topic: " + metadata.topic() + ", Timestamp: " + metadata.timestamp() + ", Partition: " + metadata.partition() + ", Offset: " + metadata.offset());
