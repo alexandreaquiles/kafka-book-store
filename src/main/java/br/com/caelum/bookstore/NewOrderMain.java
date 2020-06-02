@@ -20,14 +20,11 @@ public class NewOrderMain {
 
 //    String order = "123,Clean Code,Robert Uncle Bob Martin,159.90";
 //    String order = "456,Git,Alexandre e Rodrigo,29.90";
-    String order = "789,Clojure,Gregório Melo,29.90";
+//    String order = "789,Clojure,Gregório Melo,29.90";
+//    String order = "098,Haskell,Alexandre Oliveira,29.90";
+    String order = "765,Yesod,Alexandre Oliveira et al,29.90";
 
-    var properties = new Properties();
-    properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-    properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-    properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-
-    var producer = new KafkaProducer<String, String>(properties);
+    var producer = new KafkaProducer<String, String>(properties());
 
     var record = new ProducerRecord<String, String>("BOOK_ORDERS", order);
     Future<RecordMetadata> future = producer.send(record, (RecordMetadata metadata, Exception exception) -> {
@@ -37,9 +34,19 @@ public class NewOrderMain {
       }
       logger.info("SUCCESS! Topic: " + metadata.topic() + ", Timestamp: " + metadata.timestamp() + ", Partition: " + metadata.partition() + ", Offset: " + metadata.offset());
     });
-    RecordMetadata result = future.get();
-//    System.out.println("SUCCESS! Topic: " + result.topic() + ", Timestamp: " + result.timestamp() + ", Partition: " + result.partition() + ", Offset: " + result.offset());
 
+    //RecordMetadata result =
+    future.get();
+    //System.out.println("SUCCESS! Topic: " + result.topic() + ", Timestamp: " + result.timestamp() + ", Partition: " + result.partition() + ", Offset: " + result.offset());
+
+  }
+
+  private static Properties properties() {
+    var properties = new Properties();
+    properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+    properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+    properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+    return properties;
   }
 
 }
