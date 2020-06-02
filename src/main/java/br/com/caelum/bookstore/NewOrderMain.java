@@ -1,9 +1,6 @@
 package br.com.caelum.bookstore;
 
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,22 +19,30 @@ public class NewOrderMain {
 //    String order = "456,Git,Alexandre e Rodrigo,29.90";
 //    String order = "789,Clojure,Gregório Melo,29.90";
 //    String order = "098,Haskell,Alexandre Oliveira,29.90";
-    String order = "765,Yesod,Alexandre Oliveira et al,29.90";
+//    String order = "765,Yesod,Alexandre Oliveira et al,29.90";
+//    String order = "432,Metricas Ageis,Raphael Albino,29.90";
+    String order = "213,PostgreSQL,Vinicius Carvalho,29.90";
 
     var producer = new KafkaProducer<String, String>(properties());
 
-    var record = new ProducerRecord<String, String>("BOOK_ORDERS", order);
-    Future<RecordMetadata> future = producer.send(record, (RecordMetadata metadata, Exception exception) -> {
+    Callback callback = (RecordMetadata metadata, Exception exception) -> {
       if (exception != null) {
-        logger.error("ERROR when sending record to BOOK_ORDERS topic", exception);
+        logger.error("ERROR when sending record to " + metadata.topic() + " topic", exception);
         return;
       }
       logger.info("SUCCESS! Topic: " + metadata.topic() + ", Timestamp: " + metadata.timestamp() + ", Partition: " + metadata.partition() + ", Offset: " + metadata.offset());
-    });
+    };
 
-    //RecordMetadata result =
-    future.get();
+    var orderRecord = new ProducerRecord<String, String>("BOOK_ORDERS", order);
+    //Future<RecordMetadata> future =
+    producer.send(orderRecord, callback).get();
+
+    //RecordMetadata result = future.get();
     //System.out.println("SUCCESS! Topic: " + result.topic() + ", Timestamp: " + result.timestamp() + ", Partition: " + result.partition() + ", Offset: " + result.offset());
+
+    var email = "Thank you for your order. The gerbils at the Bookstore have just finished hand-crafting your eBook: " + order;
+    var emailRecord = new ProducerRecord<String, String>("BOOK_EMAILS", email);
+    producer.send(emailRecord, callback).get();
 
   }
 
