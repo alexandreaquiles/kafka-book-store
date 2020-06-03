@@ -8,13 +8,14 @@ public class EbookGeneratorService {
     var ebookGeneratorService = new EbookGeneratorService();
     try(var service = new KafkaService(EbookGeneratorService.class.getSimpleName(),
                                   "BOOK_ORDERS",
-                                        ebookGeneratorService::parse)) {
+                                        ebookGeneratorService::parse,
+                                        OrderFinished.class)) {
       service.run();
     }
   }
 
-  private void parse(ConsumerRecord<String, String> record) {
-    var value = record.value();
+  private void parse(ConsumerRecord<String, OrderFinished> record) {
+    OrderFinished value = record.value();
     System.out.println("Generating ebook: " + value);
     try {
       Thread.sleep(5000);

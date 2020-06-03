@@ -8,7 +8,8 @@ public class EmailService {
     var emailService = new EmailService();
     try(var service = new KafkaService(EmailService.class.getSimpleName(),
                                   "BOOK_EMAILS",
-                                        emailService::parse)) {
+                                        emailService::parse,
+                                        String.class)) {
           service.run();
     }
   }

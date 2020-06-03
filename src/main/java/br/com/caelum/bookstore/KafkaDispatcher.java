@@ -10,17 +10,17 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
-public class KafkaDispatcher implements Closeable {
+public class KafkaDispatcher<T> implements Closeable {
 
   private static final Logger logger = LoggerFactory.getLogger(KafkaDispatcher.class);
 
-  private final KafkaProducer<String, String> producer;
+  private final KafkaProducer<String, T> producer;
 
   public KafkaDispatcher( ) {
     producer = new KafkaProducer<>(properties());
   }
 
-  public void send(String topic, String key, String value) throws ExecutionException, InterruptedException {
+  public void send(String topic, String key, T value) throws ExecutionException, InterruptedException {
     Callback callback = (RecordMetadata metadata, Exception exception) -> {
       if (exception != null) {
         logger.error("ERROR when sending record to " + metadata.topic() + " topic", exception);
@@ -29,7 +29,7 @@ public class KafkaDispatcher implements Closeable {
       logger.info("SUCCESS! Topic: " + metadata.topic() + ", Timestamp: " + metadata.timestamp() + ", Partition: " + metadata.partition() + ", Offset: " + metadata.offset());
     };
 
-    var record = new ProducerRecord<String, String>(topic, key, value);
+    var record = new ProducerRecord<>(topic, key, value);
     producer.send(record, callback).get();
 
   }
@@ -38,7 +38,7 @@ public class KafkaDispatcher implements Closeable {
     var properties = new Properties();
     properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
     properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-    properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+    properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, GsonSerializer.class.getName());
     return properties;
   }
 

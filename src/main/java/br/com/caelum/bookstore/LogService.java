@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
@@ -22,7 +23,10 @@ public class LogService {
                                         record -> {
                                           var value = record.value();
                                           System.out.println("Sending to ElasticSearch: " + value);
-                                        })) {
+                                        },
+                                        String.class,
+                                        Map.of(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+                                                StringDeserializer.class.getName()))) {
       service.run();
     }
   }
