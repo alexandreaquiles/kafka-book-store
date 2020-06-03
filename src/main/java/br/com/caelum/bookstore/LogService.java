@@ -15,37 +15,15 @@ import java.util.regex.Pattern;
 
 public class LogService {
 
-  private static final Logger logger = LoggerFactory.getLogger(LogService.class);
-
   public static void main(String[] args) {
-    var consumer = new KafkaConsumer<String, String>(properties());
-    var regex = Pattern.compile("^BOOK_.+");
-    consumer.subscribe(regex);
 
-    while (true) {
-      ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100)); // busy wait
-      if (!records.isEmpty()) {
-        logger.info("Found " + records.count() + " records.");
-        for (ConsumerRecord<String, String> record : records) {
-          String value = record.value();
-
-          logger.info("I got a new message: " + value + " . Key: " + record.key()
-            + ", Partition: " + record.partition() + ", Offset: " + record.offset());
-
-          System.out.println("Sending to ElasticSearch: " + value);
-        }
-      }
+    try (var service = new KafkaService(LogService.class.getSimpleName(),
+                                        Pattern.compile("^BOOK_.+"),
+                                        record -> {
+                                          var value = record.value();
+                                          System.out.println("Sending to ElasticSearch: " + value);
+                                        })) {
+      service.run();
     }
   }
-
-  private static Properties properties() {
-    var properties = new Properties();
-    properties.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-    properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-    properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-    properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, LogService.class.getSimpleName());
-//    properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-    return properties;
-  }
-
 }
